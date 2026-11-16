@@ -1,0 +1,16 @@
+name = "super-senha-ia"
+main = "src/index.js"
+compatibility_date = "2026-11-16"
+
+[vars]
+GEMINI_MODEL = "gemini-3.5-flash-lite"
+
+# Limite adicional no Worker. Troque o namespace_id por um número positivo
+# que ainda não esteja sendo usado por outro limitador da sua conta Cloudflare.
+[[ratelimits]]
+name = "IA_RATE_LIMITER"
+namespace_id = "71843219"
+
+  [ratelimits.simple]
+  limit = 10
+  period = 60

@@ -31,11 +31,11 @@ export default function Participantes({ route, navigation }: Props) {
         return lista;
       }, []);
 
-      navigation.navigate('Duplas', {
+      navigation.navigate('Categorias', {
         duplas,
       });
     }
-  }, [jogadores, navigation, quantidadeJogadores]);
+  }, [jogadores, navigation, quantidadeJogadores, route.params]);
 
   const adicionarJogador = () => {
     const listaJogadores = [...jogadores, { nome: nomeJogador }];

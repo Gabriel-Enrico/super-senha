@@ -8,9 +8,9 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 export default function Home({ navigation }: Props) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home Screen</Text>
+      <Text style={styles.title}>Super Senha</Text>
       <AnimatedButton
-        title="Iniciar Jogo"
+        title="Iniciar jogo"
         onPress={() => navigation.navigate('Iniciar')}
       />
     </View>
@@ -26,7 +26,9 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: 24,
+    fontWeight: '700',
     color: '#F1FECB',
+    marginHorizontal: 24,
   },
 });
