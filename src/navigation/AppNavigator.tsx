@@ -1,48 +1,49 @@
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import Home from '../screens/Home';
-import IniciarJogo from '../screens/IniciarJogo';
-import Participantes from '../screens/Participantes';
-import Duplas from '../screens/Duplas';
-import TemaPersonalizado from '../screens/TemaPersonalizado';
-import Categorias from '../screens/Categorias';
-import DuracaoPartida from '../screens/DuracaoPartida';
-import type { Dupla } from '../types';
-
-type OrigemPalavras = 'firestore' | 'ia' | 'firestore-fallback';
-
-type PreparacaoPartida = {
-  duplas: Dupla[];
-  categoriaId?: string;
-  palavras?: string[];
-  origem: OrigemPalavras;
-  tema?: string;
-  mensagemFallback?: string;
-};
+import PlayerCountScreen from '../screens/PlayerCountScreen';
+import CategoriesScreen from '../screens/CategoriesScreen';
+import GameSettingsScreen from '../screens/GameSettingsScreen';
+import RulesScreen from '../screens/RulesScreen';
+import ParticipantsScreen from '../screens/ParticipantsScreen';
+import TeamsScreen from '../screens/TeamsScreen';
 
 export type RootStackParamList = {
-  Home: undefined;
+  Menu: undefined;
   Iniciar: undefined;
-  Categorias: { duplas: Dupla[] };
-  Personalizado: { duplas: Dupla[] };
-  Duracao: PreparacaoPartida;
-  Participantes: {
-    quantidadeJogadores: number;
-  };
-  Duplas: PreparacaoPartida & { duracaoPartida: 'rapida' | 'longa' };
+  Regras: undefined;
+  'Configurações': undefined;
+  Categorias: undefined;
+  'Ajustes da partida': undefined;
+  Participantes: undefined;
+  Duplas: undefined;
+  Partida: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator initialRouteName="Home">
-      <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="Iniciar" component={IniciarJogo} />
-      <Stack.Screen name="Categorias" component={Categorias} />
-      <Stack.Screen name="Personalizado" component={TemaPersonalizado} />
-      <Stack.Screen name="Participantes" component={Participantes} />
-      <Stack.Screen name="Duracao" component={DuracaoPartida} />
-      <Stack.Screen name="Duplas" component={Duplas} />
-    </Stack.Navigator>
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Menu"
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: '#050505' },
+          animation: 'none',
+        }}
+      >
+        <Stack.Screen name="Menu" component={Home} />
+        <Stack.Screen name="Iniciar" component={PlayerCountScreen} />
+        <Stack.Screen name="Regras" component={RulesScreen} />
+        <Stack.Screen name="Configurações" component={GameSettingsScreen} />
+        <Stack.Screen name="Categorias" component={CategoriesScreen} />
+        <Stack.Screen name="Ajustes da partida" component={GameSettingsScreen} />
+        <Stack.Screen name="Participantes" component={ParticipantsScreen} />
+        <Stack.Screen name="Duplas" component={TeamsScreen} />
+        <Stack.Screen name="Partida" component={TeamsScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }

@@ -3,9 +3,6 @@
 # dependencies
 node_modules/
 
-# Cloudflare Wrangler local state, caches, and generated bundles
-.wrangler/
-
 # Expo
 .expo/
 dist/
@@ -34,22 +31,7 @@ yarn-error.*
 *.pem
 
 # local env files
-.env
-.env.*
-!.env.example
-.dev.vars
-.dev.vars.*
-
-# Firebase Admin SDK credentials (never commit service-account private keys)
-*service-account*.json
-*serviceAccount*.json
-*-firebase-adminsdk-*.json
-firebase-adminsdk*.json
-
-# Firebase local emulator/debug data
-.firebase/
-firebase-debug.log
-firestore-debug.log
+.env*.local
 
 # typescript
 *.tsbuildinfo

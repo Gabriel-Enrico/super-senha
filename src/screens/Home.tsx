@@ -1,34 +1,65 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet, Text, View } from 'react-native';
-import AnimatedButton from '../components/AnimatedButton';
-import type { RootStackParamList } from '../navigation/AppNavigator';
+import { useCallback, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+import MenuIntroAnimation from '../features/menu-intro/MenuIntroAnimation';
+import MenuArtwork from '../features/menu-intro/MenuArtwork';
+import MenuRevealFlash from '../features/menu-intro/MenuRevealFlash';
+import { useSuitNavigation } from '../features/suit-transition/suitRoutes';
+import {
+  getCoverFrame,
+  MENU_IMAGE_ASPECT,
+  MENU_INTRO_CONFIG,
+} from '../features/menu-intro/menuIntroConfig';
+import type { LayoutChangeEvent } from 'react-native';
 
-export default function Home({ navigation }: Props) {
+export default function Home() {
+  const [introComplete, setIntroComplete] = useState(false);
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const { go } = useSuitNavigation();
+  const reducedMotion = useReducedMotion();
+  const skipIntro = reducedMotion || MENU_INTRO_CONFIG.skipAnimationForTests;
+  const frame = getCoverFrame(viewport.width, viewport.height, MENU_IMAGE_ASPECT);
+  const finishIntro = useCallback(() => setIntroComplete(true), []);
+
+  const handleLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setViewport((current) =>
+      current.width === width && current.height === height
+        ? current
+        : { width, height },
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Super Senha</Text>
-      <AnimatedButton
-        title="Iniciar jogo"
-        onPress={() => navigation.navigate('Iniciar')}
-      />
+    <View onLayout={handleLayout} style={styles.screen}>
+      {introComplete && (
+        <MenuArtwork
+          frame={frame}
+          onNavigate={go}
+        />
+      )}
+
+      {!introComplete && viewport.width > 0 && viewport.height > 0 && (
+        <MenuIntroAnimation
+          onComplete={finishIntro}
+          viewport={viewport}
+          skipAnimation={skipIntro}
+        />
+      )}
+      {introComplete && !skipIntro && (
+        <MenuRevealFlash />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    alignContent: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#23212C',
-  },
-  title: {
-    textAlign: 'center',
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#F1FECB',
-    marginHorizontal: 24,
+    minWidth: 0,
+    minHeight: 0,
+    overflow: 'hidden',
+    backgroundColor: '#050505',
   },
 });
