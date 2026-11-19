@@ -7,16 +7,17 @@ import { useSuitNavigation } from '../features/suit-transition/suitRoutes';
 const LESSONS = [
   {
     icon: '♠', title: 'O jogo em duplas',
-    paragraphs: ['Uma pessoa recebe uma palavra secreta. A outra tenta descobrir a senha com a ajuda das dicas.'],
+    paragraphs: ['Em cada dupla, uma pessoa lê as palavras do card e marca os acertos. A outra tenta adivinhar as palavras.'],
   },
   {
-    icon: '♦', title: 'Uma palavra por vez',
-    paragraphs: ['Dê uma dica de uma palavra sem revelar a senha. Sua dupla responde com uma tentativa de uma palavra.',
-      'Se a tentativa estiver errada, dê outra dica enquanto houver tempo na carta.'],
+    icon: '♦', title: 'Como avançar',
+    paragraphs: ['A dupla pode escolher qualquer palavra do card para começar. Marque cada palavra quando ela for acertada.',
+      'A dupla avança ao acertar cinco palavras. No card final, precisa acertar todas as palavras.'],
   },
   {
     icon: '♣', title: 'Exemplo de rodada',
-    paragraphs: ['Senha: farol', 'Dica: luz → Palpite: lanterna', 'Dica: costa → Palpite: farol!'],
+    paragraphs: ['Quem lê anuncia uma palavra do card e acompanha os acertos.',
+      'A outra pessoa diz seus palpites. Quando acertar, quem lê marca a palavra e passa para outra.'],
   },
 ] as const;
 

@@ -8,7 +8,7 @@ type RouteName = keyof RootStackParamList;
 
 export function routeSuit(route: RouteName): Suit {
   if (route === 'Regras') return '♦';
-  if (route === 'Configurações') return '♣';
+  if (route === 'Configurações' || route === 'Ajustes da partida') return '♣';
   return '♠';
 }
 
@@ -28,7 +28,20 @@ export function useSuitNavigation() {
     backId: backAnchor(route, suit),
     actionId: `${route}:continue`,
     go: (to: Exclude<RouteName, 'Menu'>, from: string) =>
-      run({ suit: routeSuit(to), from, to: backAnchor(to, routeSuit(to)), navigate: () => navigation.navigate(to) }),
+      run({
+        suit: routeSuit(to),
+        from,
+        to: backAnchor(to, routeSuit(to)),
+        navigate: () => {
+          if (to === 'Partida') {
+            // A partida começa como raiz da navegação: as telas de configuração
+            // deixam de fazer parte do histórico de voltar.
+            navigation.reset({ index: 0, routes: [{ name: 'Partida' }] });
+            return;
+          }
+          navigation.navigate(to);
+        },
+      }),
     back: (source = backAnchor(route, suit)) => {
       const state = navigation.getState();
       const previous = state.routes[state.index - 1]?.name;

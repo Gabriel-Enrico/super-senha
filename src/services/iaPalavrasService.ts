@@ -1,6 +1,7 @@
 const REQUEST_TIMEOUT_MS = 40_000;
-const MIN_WORDS = 4;
-const MAX_WORDS = 8;
+const MIN_WORDS = 26;
+const MAX_WORDS = 40;
+const MAX_EXCLUDED_WORDS = 200;
 const COOLDOWN_MS = 30_000;
 
 let lastRequestAt = 0;
@@ -14,32 +15,33 @@ function normalizeForComparison(value: string): string {
     .trim();
 }
 
-function validateWords(value: unknown, tema: string): string[] {
+function validateWords(value: unknown, tema: string, previouslyUsed: string[]): string[] {
   if (!Array.isArray(value) || !value.every((word) => typeof word === 'string')) {
     throw new Error('A IA retornou uma lista em formato inválido.');
   }
 
   const termosDoTema = new Set(normalizeForComparison(tema).split(' '));
+  const usadasAnteriormente = new Set(previouslyUsed.map(normalizeForComparison));
   const seen = new Set<string>();
   const palavras = value
     .map((word) => word.trim())
     .filter((word) => {
       const normalized = normalizeForComparison(word);
       if (!/^[a-z]{4,10}$/.test(normalized)) return false;
-      if (termosDoTema.has(normalized) || seen.has(normalized)) return false;
+      if (termosDoTema.has(normalized) || usadasAnteriormente.has(normalized) || seen.has(normalized)) return false;
       seen.add(normalized);
       return true;
     })
     .slice(0, MAX_WORDS);
 
   if (palavras.length < MIN_WORDS) {
-    throw new Error('A IA não retornou palavras suficientes para a rodada.');
+    throw new Error('A IA não retornou 26 palavras novas válidas. Tente novamente com um tema mais amplo.');
   }
 
   return palavras;
 }
 
-export async function gerarPalavrasPorTema(tema: string): Promise<string[]> {
+export async function gerarPalavrasPorTema(tema: string, previouslyUsed: string[] = []): Promise<string[]> {
   const trimmedTopic = tema.trim();
   if (!trimmedTopic || trimmedTopic.length > 60) {
     throw new Error('Digite um tema de até 60 caracteres.');
@@ -58,12 +60,14 @@ export async function gerarPalavrasPorTema(tema: string): Promise<string[]> {
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const excludedWords = [...new Set(previouslyUsed.map((word) => word.trim()).filter(Boolean))]
+    .slice(-MAX_EXCLUDED_WORDS);
 
   try {
     const response = await fetch(workerUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tema: trimmedTopic }),
+      body: JSON.stringify({ tema: trimmedTopic, evitar: excludedWords }),
       signal: controller.signal,
     });
 
@@ -79,7 +83,7 @@ export async function gerarPalavrasPorTema(tema: string): Promise<string[]> {
       );
     }
 
-    return validateWords(responseBody?.palavras, trimmedTopic);
+    return validateWords(responseBody?.palavras, trimmedTopic, excludedWords);
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('A IA demorou demais para responder.');

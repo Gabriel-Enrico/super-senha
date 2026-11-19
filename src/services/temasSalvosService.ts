@@ -1,0 +1,69 @@
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore';
+import { db } from '../../config_firebase';
+
+export type TemaSalvo = { id: string; tema: string; palavrasUsadas: string[] };
+const MAX_WORD_HISTORY = 200;
+
+function temaCollection(uid: string) {
+  return collection(db, 'users', uid, 'temas');
+}
+
+function temaDocument(uid: string, tema: string) {
+  const id = encodeURIComponent(tema.trim().toLocaleLowerCase('pt-BR'));
+  return doc(temaCollection(uid), id);
+}
+
+function normalizeWord(word: string) {
+  return word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+export async function buscarPalavrasUsadas(uid: string, tema: string): Promise<string[]> {
+  const snapshot = await getDoc(temaDocument(uid, tema));
+  const words = snapshot.data()?.palavrasUsadas;
+  return Array.isArray(words) ? words.filter((word): word is string => typeof word === 'string') : [];
+}
+
+export async function salvarTema(uid: string, tema: string, novasPalavras: string[] = []) {
+  const reference = temaDocument(uid, tema);
+  const previous = await getDoc(reference);
+  const previousWords = previous.data()?.palavrasUsadas;
+  const history = Array.isArray(previousWords)
+    ? previousWords.filter((word): word is string => typeof word === 'string')
+    : [];
+  const unique = new Map<string, string>();
+  [...history, ...novasPalavras].forEach((word) => {
+    const trimmed = word.trim();
+    if (trimmed) unique.set(normalizeWord(trimmed), trimmed);
+  });
+
+  await setDoc(reference, {
+    tema: tema.trim(),
+    palavrasUsadas: [...unique.values()].slice(-MAX_WORD_HISTORY),
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+}
+
+export async function listarTemasSalvos(uid: string): Promise<TemaSalvo[]> {
+  const snapshot = await getDocs(query(temaCollection(uid), orderBy('updatedAt', 'desc')));
+  return snapshot.docs.flatMap((savedTopic) => {
+    const tema = savedTopic.data().tema;
+    return typeof tema === 'string' && tema.trim()
+      ? [{
+          id: savedTopic.id,
+          tema,
+          palavrasUsadas: Array.isArray(savedTopic.data().palavrasUsadas)
+            ? savedTopic.data().palavrasUsadas.filter((word: unknown): word is string => typeof word === 'string')
+            : [],
+        }]
+      : [];
+  });
+}

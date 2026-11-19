@@ -1,6 +1,6 @@
 # Worker da API de IA
 
-O Worker recebe somente o tema personalizado, chama a API do Gemini e devolve até oito palavras filtradas. Usa `gemini-3.5-flash-lite`, modelo de baixa latência; nomes de jogadores não são enviados.
+O Worker recebe o tema personalizado e, quando disponível, palavras já sugeridas para evitar repetições. Chama a API do Gemini e devolve pelo menos 26 e até 40 palavras filtradas. O app usa o conjunto maior para variar os cards ao longo da partida. Usa `gemini-3.1-flash-lite`, modelo otimizado para baixa latência; nomes de jogadores não são enviados.
 
 ## Preparar a chave
 
@@ -56,6 +56,7 @@ O limitador usa um identificador numérico em `wrangler.toml`. Se esse número j
 
 - O app aplica intervalo mínimo de 30 segundos entre pedidos na mesma sessão.
 - O Worker limita até dez pedidos por minuto por IP e aceita temas de até 60 caracteres.
-- Cada resposta contém no máximo oito palavras; erros e limites excedidos acionam o fallback do Firestore no app.
-- O Gemini no nível gratuito pode usar conteúdo enviado para melhorar produtos do Google. O app envia apenas o tema, nunca nomes ou dados dos jogadores. Evite colocar dados pessoais no campo de tema.
+- Respostas lentas recebem uma segunda tentativa após 15 segundos; respostas 5xx também recebem uma segunda tentativa curta. Erros 429 de cota não são repetidos.
+- Cada resposta contém de 26 a 40 palavras válidas. O app guarda até 200 palavras já usadas por tema e as envia em pedidos seguintes para reduzir repetições; erros e limites excedidos acionam o fallback do Firestore no fluxo de criação.
+- O Gemini no nível gratuito pode usar conteúdo enviado para melhorar produtos do Google. O app envia o tema e palavras anteriormente sugeridas, nunca nomes ou dados dos jogadores. Evite colocar dados pessoais no campo de tema.
 - Não registre o corpo da requisição nem a chave em logs.

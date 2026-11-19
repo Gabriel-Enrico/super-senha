@@ -39,10 +39,11 @@ export function SuitIcon({ suit, id, size = 27, color = ink.white }: {
   );
 }
 
-export function MenuAction({ title, next, onPress }: {
+export function MenuAction({ title, next, onPress, disabled = false }: {
   title: string;
   next?: Parameters<ReturnType<typeof useSuitNavigation>['go']>[0];
   onPress?: () => void;
+  disabled?: boolean;
 }) {
   const { go, suit, actionId } = useSuitNavigation();
   const [focused, setFocused] = useState(false);
@@ -52,10 +53,11 @@ export function MenuAction({ title, next, onPress }: {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={title}
+        disabled={disabled}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onPress={next ? () => go(next, actionId) : onPress}
-        style={({ pressed }) => [styles.action, focused && styles.actionFocus, pressed && styles.actionPressed]}
+        style={({ pressed }) => [styles.action, focused && styles.actionFocus, disabled && styles.actionDisabled, pressed && styles.actionPressed]}
       >
         <SuitIcon suit={suit} id={actionId} color="#111" size={25} />
         <PixelText kind="heading" style={styles.actionText}>{title}</PixelText>
@@ -65,23 +67,25 @@ export function MenuAction({ title, next, onPress }: {
   );
 }
 
-export function GameScreenLayout({ title, subtitle, children, footer, center }: {
-  title: string; subtitle: string; children: ReactNode; footer?: ReactNode; center?: boolean;
+export function GameScreenLayout({ title, subtitle, children, footer, center, showBack = true }: {
+  title: string; subtitle: string; children: ReactNode; footer?: ReactNode; center?: boolean; showBack?: boolean;
 }) {
   const { back, backId, suit, route } = useSuitNavigation();
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={styles.shell} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.header}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={route === 'Iniciar' || route === 'Regras' || route === 'Configurações' ? 'Voltar ao menu' : 'Voltar'}
-            onPress={() => back()}
-            style={({ pressed }) => [styles.back, pressed && styles.backPressed]}
-          >
-            <SuitIcon suit={suit} id={backId} />
-            <Text selectable={false} accessible={false} style={styles.backArrow}>←</Text>
-          </Pressable>
+          {showBack ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={route === 'Iniciar' || route === 'Regras' || route === 'Configurações' ? 'Voltar ao menu' : 'Voltar'}
+              onPress={() => back()}
+              style={({ pressed }) => [styles.back, pressed && styles.backPressed]}
+            >
+              <SuitIcon suit={suit} id={backId} />
+              <Text selectable={false} accessible={false} style={styles.backArrow}>←</Text>
+            </Pressable>
+          ) : <View style={styles.backPlaceholder} />}
           <View style={styles.rule} />
           <View pointerEvents="none">
             <Text selectable={false} accessible={false} style={styles.headerSuit}>{suitGlyph(suit)}</Text>
@@ -124,6 +128,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, backgroundColor: ink.panel, borderColor: ink.line, borderWidth: 1,
   },
   backPressed: { borderColor: ink.white },
+  backPlaceholder: { width: 54, height: 46 },
   backArrow: { color: ink.white, fontSize: 19 },
   rule: { height: 1, backgroundColor: ink.line, flex: 1 },
   headerSuit: { fontSize: 28, color: ink.muted },
@@ -145,6 +150,7 @@ const styles = StyleSheet.create({
     transform: [{ skewX: '-7deg' }],
   },
   actionFocus: { borderColor: '#67666c' },
+  actionDisabled: { opacity: 0.4 },
   actionPressed: { transform: [{ skewX: '-7deg' }, { scale: 0.98 }] },
   actionText: { flex: 1, textAlign: 'center', color: '#111', transform: [{ skewX: '7deg' }] },
   arrow: { color: '#111', fontSize: 21 },
