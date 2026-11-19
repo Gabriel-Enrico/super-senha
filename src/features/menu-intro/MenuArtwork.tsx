@@ -16,7 +16,11 @@ import { SuitIcon } from '../game-setup/GameUI';
 import { MOTION, suitGlyph, type Suit } from '../suit-transition/motion';
 import { backAnchor, routeSuit } from '../suit-transition/suitRoutes';
 
-export type MenuButtonName = 'Iniciar' | 'Regras' | 'Configurações';
+export type MenuButtonName =
+  | 'Iniciar'
+  | 'Meus temas'
+  | 'Regras'
+  | 'Configurações';
 
 type Frame = { left: number; top: number; width: number; height: number };
 type Rect = { x: number; y: number; width: number; height: number };
@@ -44,41 +48,51 @@ type Props = {
   onNavigate: (route: MenuButtonName, source: string) => void;
 };
 
-// Coordinates follow the reference image. These are real cards and text, not
-// clipped button pixels; only the logo and corner decoration use the image.
+
 const BUTTONS: ButtonArtwork[] = [
   {
     route: 'Iniciar',
     label: 'Iniciar jogo',
     title: 'Iniciar Jogo',
     light: true,
-    front: { x: 0.169, y: 0.528, width: 0.69, height: 0.094 },
-    rear: { x: 0.147, y: 0.513, width: 0.66, height: 0.105 },
+    front: { x: 0.169, y: 0.49, width: 0.69, height: 0.080 },
+    rear: { x: 0.147, y: 0.479, width: 0.66, height: 0.088 },
     frontFloat: { horizontal: 4, vertical: 2.7, speed: 1.07, phase: 0.46, tilt: 0.17 },
     rearFloat: { horizontal: 3.1, vertical: 2.1, speed: 0.81, phase: 3.12, tilt: 0.24 },
-    fontRatio: 0.066,
+    fontRatio: 0.060,
+  },
+  {
+    route: 'Meus temas',
+    label: 'Meus temas',
+    title: 'Meus Temas',
+    light: false,
+    front: { x: 0.169, y: 0.595, width: 0.69, height: 0.073 },
+    rear: { x: 0.147, y: 0.584, width: 0.66, height: 0.081 },
+    frontFloat: { horizontal: 3.6, vertical: 3, speed: 0.93, phase: 2.08, tilt: 0.15 },
+    rearFloat: { horizontal: 2.7, vertical: 2.5, speed: 1.23, phase: 4.81, tilt: 0.2 },
+    fontRatio: 0.054,
   },
   {
     route: 'Regras',
     label: 'Regras',
     title: 'Regras',
     light: false,
-    front: { x: 0.181, y: 0.68, width: 0.64, height: 0.076 },
-    rear: { x: 0.19, y: 0.671, width: 0.61, height: 0.077 },
+    front: { x: 0.181, y: 0.695, width: 0.64, height: 0.070 },
+    rear: { x: 0.19, y: 0.686, width: 0.61, height: 0.075 },
     frontFloat: { horizontal: 3.6, vertical: 3, speed: 0.93, phase: 2.08, tilt: 0.15 },
     rearFloat: { horizontal: 2.7, vertical: 2.5, speed: 1.23, phase: 4.81, tilt: 0.2 },
-    fontRatio: 0.064,
+    fontRatio: 0.056,
   },
   {
     route: 'Configurações',
     label: 'Configurações',
     title: 'Configurações',
     light: false,
-    front: { x: 0.171, y: 0.807, width: 0.658, height: 0.079 },
-    rear: { x: 0.181, y: 0.796, width: 0.625, height: 0.083 },
+    front: { x: 0.171, y: 0.795, width: 0.658, height: 0.071 },
+    rear: { x: 0.181, y: 0.784, width: 0.625, height: 0.075 },
     frontFloat: { horizontal: 3.8, vertical: 2.9, speed: 1.14, phase: 5.33, tilt: 0.18 },
     rearFloat: { horizontal: 3.3, vertical: 2.3, speed: 0.76, phase: 1.37, tilt: 0.26 },
-    fontRatio: 0.057,
+    fontRatio: 0.050,
   },
 ];
 

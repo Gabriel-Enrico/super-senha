@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -66,4 +67,74 @@ export async function listarTemasSalvos(uid: string): Promise<TemaSalvo[]> {
         }]
       : [];
   });
+}
+
+export async function atualizarTema(
+  uid: string,
+  id: string,
+  novoTema: string
+): Promise<string> {
+  const nome = novoTema.trim();
+
+  if (!nome) {
+    throw new Error('O nome do tema não pode ficar vazio.');
+  }
+
+  const referenciaAntiga = doc(temaCollection(uid), id);
+  const documentoAntigo = await getDoc(referenciaAntiga);
+
+  if (!documentoAntigo.exists()) {
+    throw new Error('Tema não encontrado.');
+  }
+
+  const novoId = encodeURIComponent(
+    nome.toLocaleLowerCase('pt-BR')
+  );
+
+  const referenciaNova = doc(temaCollection(uid), novoId);
+
+  const historicoAntigo = documentoAntigo.data().palavrasUsadas;
+
+  if (novoId === id) {
+    await setDoc(referenciaAntiga, {
+      tema: nome,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+
+    return novoId;
+  }
+
+  const documentoNovo = await getDoc(referenciaNova);
+  const historicoNovo = documentoNovo.data()?.palavrasUsadas;
+
+  const palavras = [
+    ...(Array.isArray(historicoAntigo) ? historicoAntigo : []),
+    ...(Array.isArray(historicoNovo) ? historicoNovo : []),
+  ];
+
+  const unicas = new Map<string, string>();
+
+  palavras.forEach((palavra) => {
+    if (typeof palavra === 'string' && palavra.trim()) {
+      const limpa = palavra.trim();
+      unicas.set(normalizeWord(limpa), limpa);
+    }
+  });
+
+  await setDoc(referenciaNova, {
+    tema: nome,
+    palavrasUsadas: [...unicas.values()].slice(-MAX_WORD_HISTORY),
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+
+  await deleteDoc(referenciaAntiga);
+
+  return novoId;
+}
+
+export async function deletarTema(
+  uid: string,
+  id: string
+): Promise<void> {
+  await deleteDoc(doc(temaCollection(uid), id));
 }
