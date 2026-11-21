@@ -1,6 +1,7 @@
 import { MotiView } from 'moti';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import SfxPressable from '../features/sfx/SfxPressable';
 
 type AnimatedButtonProps = {
   title: string;
@@ -16,7 +17,7 @@ export default function AnimatedButton({
   const [pressed, setPressed] = useState(false);
 
   return (
-    <Pressable
+    <SfxPressable
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
@@ -28,7 +29,7 @@ export default function AnimatedButton({
       >
         <Text style={styles.text}>{title}</Text>
       </MotiView>
-    </Pressable>
+    </SfxPressable>
   );
 }
 

@@ -120,7 +120,12 @@ export async function buscarFallbackAleatorioDoFirebase(): Promise<{
   palavras: string[];
 }> {
   const categorias = await listarCategorias();
-
+  const categoriaLivreIndex = categorias.findIndex(
+    (categoria) => categoria.id.toLocaleLowerCase('pt-BR') === 'livre',
+  );
+  const categoriaLivre = categoriaLivreIndex >= 0
+    ? categorias.splice(categoriaLivreIndex, 1)[0]
+    : undefined;
   for (let index = categorias.length - 1; index > 0; index -= 1) {
     const randomIndex = Math.floor(Math.random() * (index + 1));
     [categorias[index], categorias[randomIndex]] = [
@@ -128,11 +133,12 @@ export async function buscarFallbackAleatorioDoFirebase(): Promise<{
       categorias[index],
     ];
   }
+  if (categoriaLivre) categorias.unshift(categoriaLivre);
 
   for (const categoria of categorias) {
     try {
       const palavras = await buscarPalavrasDaCategoria(categoria.id);
-      if (palavras.length > 0) {
+      if (palavras.length >= 26) {
         const embaralhadas = [...palavras];
         for (let index = embaralhadas.length - 1; index > 0; index -= 1) {
           const randomIndex = Math.floor(Math.random() * (index + 1));
@@ -144,7 +150,7 @@ export async function buscarFallbackAleatorioDoFirebase(): Promise<{
 
         return {
           categoriaId: categoria.id,
-          palavras: embaralhadas.slice(0, 8),
+          palavras: embaralhadas.slice(0, 26),
         };
       }
     } catch {
@@ -152,5 +158,5 @@ export async function buscarFallbackAleatorioDoFirebase(): Promise<{
     }
   }
 
-  throw new Error('Não foi possível carregar palavras do Firebase.');
+  throw new Error('Não foi encontrada uma categoria do Firebase com pelo menos 26 palavras.');
 }

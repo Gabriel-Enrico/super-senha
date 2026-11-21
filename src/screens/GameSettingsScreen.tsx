@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { GameScreenLayout, MenuAction, PixelText } from '../features/game-setup/GameUI';
 import { MODES, TIMES, useGameSetup } from '../features/game-setup/gameSetup';
 import { gameStyles, ink } from '../features/game-setup/gameTheme';
+import SfxPressable from '../features/sfx/SfxPressable';
 import { useSuitNavigation } from '../features/suit-transition/suitRoutes';
 
 export default function GameSettingsScreen() {
@@ -28,18 +29,18 @@ export default function GameSettingsScreen() {
             return (
               <View key={mode.id} style={[styles.mode, selected && gameStyles.selected]}>
                 <View style={gameStyles.row}>
-                  <Pressable accessibilityRole="radio" accessibilityLabel={mode.label} aria-checked={selected}
+                  <SfxPressable sound="secondary" accessibilityRole="radio" accessibilityLabel={mode.label} aria-checked={selected}
                     onPress={() => update({ mode: mode.id })} style={styles.modeChoice}>
                     <View style={[styles.mark, selected && styles.markChecked]}>
                       <PixelText style={{ color: selected ? '#111' : ink.muted }}>{selected ? '◆' : '·'}</PixelText>
                     </View>
                     <PixelText kind="heading" style={gameStyles.grow}>{mode.label}</PixelText>
-                  </Pressable>
-                  <Pressable accessibilityRole="button" accessibilityLabel={`Sobre o modo ${mode.label}`}
+                  </SfxPressable>
+                  <SfxPressable sound="secondary" accessibilityLabel={`Sobre o modo ${mode.label}`}
                     aria-expanded={expanded} style={styles.info}
                     onPress={() => setOpenInfo(expanded ? null : mode.id)}>
                     <PixelText style={styles.infoLabel}>i</PixelText>
-                  </Pressable>
+                  </SfxPressable>
                 </View>
                 {expanded && <PixelText kind="detail" style={styles.description}>{mode.description}</PixelText>}
               </View>
@@ -53,11 +54,11 @@ export default function GameSettingsScreen() {
           {TIMES.map((seconds) => {
             const selected = setup.seconds === seconds;
             return (
-              <Pressable key={seconds} accessibilityRole="radio" accessibilityLabel={`${seconds} segundos`}
+              <SfxPressable key={seconds} sound="secondary" accessibilityRole="radio" accessibilityLabel={`${seconds} segundos`}
                 aria-checked={selected} onPress={() => update({ seconds })}
                 style={[styles.time, selected && styles.timeSelected]}>
                 <PixelText style={selected && styles.timeSelectedText}>{seconds}</PixelText>
-              </Pressable>
+              </SfxPressable>
             );
           })}
         </View>

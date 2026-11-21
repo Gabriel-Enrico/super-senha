@@ -1,22 +1,24 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { GameScreenLayout, MenuAction, PixelText, ProgressIndicator } from '../features/game-setup/GameUI';
 import { gameStyles, ink } from '../features/game-setup/gameTheme';
+import SfxPressable from '../features/sfx/SfxPressable';
 import { useSuitNavigation } from '../features/suit-transition/suitRoutes';
 
 const LESSONS = [
   {
     icon: '♠', title: 'O jogo em duplas',
-    paragraphs: ['Uma pessoa recebe uma palavra secreta. A outra tenta descobrir a senha com a ajuda das dicas.'],
+    paragraphs: ['Em cada dupla, uma pessoa lê as palavras do card e marca os acertos. A outra tenta adivinhar as palavras.'],
   },
   {
-    icon: '♦', title: 'Uma palavra por vez',
-    paragraphs: ['Dê uma dica de uma palavra sem revelar a senha. Sua dupla responde com uma tentativa de uma palavra.',
-      'Se a tentativa estiver errada, dê outra dica enquanto houver tempo na carta.'],
+    icon: '♦', title: 'Como avançar',
+    paragraphs: ['A dupla pode escolher qualquer palavra do card para começar. Marque cada palavra quando ela for acertada.',
+      'A dupla avança ao acertar cinco palavras. No card final, precisa acertar todas as palavras.'],
   },
   {
     icon: '♣', title: 'Exemplo de rodada',
-    paragraphs: ['Senha: farol', 'Dica: luz → Palpite: lanterna', 'Dica: costa → Palpite: farol!'],
+    paragraphs: ['Quem lê anuncia uma palavra do card e acompanha os acertos.',
+      'A outra pessoa diz seus palpites. Quando acertar, quem lê marca a palavra e passa para outra.'],
   },
 ] as const;
 
@@ -35,9 +37,9 @@ export default function RulesScreen() {
         <>
           <ProgressIndicator total={LESSONS.length} value={index + 1} label={`Página ${index + 1} de ${LESSONS.length}`} />
           {index > 0 && (
-            <Pressable accessibilityRole="button" onPress={() => setIndex(index - 1)} style={styles.previous}>
+            <SfxPressable onPress={() => setIndex(index - 1)} style={styles.previous}>
               <PixelText kind="detail">Página anterior</PixelText>
-            </Pressable>
+            </SfxPressable>
           )}
           <MenuAction title={last ? 'Concluir' : 'Próximo'}
             onPress={() => last ? back(actionId) : setIndex(index + 1)} />

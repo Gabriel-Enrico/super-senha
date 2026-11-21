@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
   Extrapolation,
   interpolate,
+  runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -14,6 +16,7 @@ import Animated, {
 
 import menuImage from '../../../assets/menu-super-senha-v3.png';
 import tableImage from '../../../assets/mesa-poker.png';
+import { playSfx, stopSfx } from '../sfx/sfx';
 import {
   getCoverFrame,
   getMenuFrameOnTable,
@@ -47,6 +50,10 @@ const RESOLVE_START_MS =
 const FLASH_START_MS = RESOLVE_START_MS + MENU_INTRO_CONFIG.resolveDurationMs;
 const FLASH_IN_MS = 45;
 
+function playCardLaunch() {
+  playSfx('cards');
+}
+
 export default function MenuIntroAnimation({
   onComplete,
   viewport,
@@ -62,6 +69,20 @@ export default function MenuIntroAnimation({
   const finalFrame = getCoverFrame(width, height, MENU_IMAGE_ASPECT);
   const endCameraScale = finalFrame.height / frame.height;
   const skip = skipAnimation || MENU_INTRO_CONFIG.skipAnimationForTests;
+  const transitionPlayed = useRef(false);
+  const introActive = useRef(false);
+  const playIntroTransition = useCallback(() => {
+    if (!introActive.current || transitionPlayed.current) return;
+    transitionPlayed.current = true;
+    playSfx('introTransition');
+  }, []);
+
+  useAnimatedReaction(
+    () => resolveProgress.value > 0,
+    (resolving, wasResolving) => {
+      if (resolving && !wasResolving) runOnJS(playIntroTransition)();
+    },
+  );
 
   useEffect(() => {
     if (skip) {
@@ -69,6 +90,7 @@ export default function MenuIntroAnimation({
       return;
     }
 
+    introActive.current = true;
     sceneOpacity.value = withTiming(1, {
       duration: MENU_INTRO_CONFIG.introFadeDurationMs,
       easing: Easing.inOut(Easing.quad),
@@ -95,7 +117,9 @@ export default function MenuIntroAnimation({
     const completionTimer = setTimeout(onComplete, FLASH_START_MS + FLASH_IN_MS);
 
     return () => {
+      introActive.current = false;
       clearTimeout(completionTimer);
+      stopSfx('cards');
       cancelAnimation(cameraProgress);
       cancelAnimation(resolveProgress);
       cancelAnimation(sceneOpacity);
@@ -236,6 +260,13 @@ function TileFlight({
       ? -MENU_INTRO_CONFIG.startingRotationDegrees
       : MENU_INTRO_CONFIG.startingRotationDegrees;
   const landingRotation = LANDING_ANGLES[index % LANDING_ANGLES.length];
+
+  useAnimatedReaction(
+    () => launchOpacity.value > 0,
+    (launched, wasLaunched) => {
+      if (launched && !wasLaunched) runOnJS(playCardLaunch)();
+    },
+  );
 
   useEffect(() => {
     launchOpacity.value = withDelay(

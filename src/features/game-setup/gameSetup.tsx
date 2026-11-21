@@ -1,30 +1,39 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 export const MODES = [
-  { id: 'longo', label: 'Longo', description: 'Formato para uma sessão mais extensa.' },
-  { id: 'padrao', label: 'Padrão', description: 'Formato principal para uma sessão em duplas.' },
-  { id: 'rapido', label: 'Rápido', description: 'Formato para uma sessão mais curta.' },
-  { id: 'duelo', label: 'Duelo', description: 'Formato para um confronto direto.' },
+  { id: 'longo', label: 'Longo', description: 'Cards com 8, 7, 6 e 5 palavras.' },
+  { id: 'padrao', label: 'Padrão', description: 'Cards com 8, 7 e 5 palavras.' },
+  { id: 'rapido', label: 'Rápido', description: 'Cards com 8, 6 e 5 palavras.' },
+  { id: 'duelo', label: 'Duelo', description: 'Cards com 6 e 5 palavras.' },
 ] as const;
 
 export const TIMES = [60, 90, 120, 150, 180] as const;
 
-export const CATEGORIES = [
-  { id: 'livre', label: 'Livre', description: 'Palavras de assuntos variados', available: true },
-  { id: 'basico', label: 'Básico', description: 'Objetos e situações do dia a dia', available: true },
-  { id: 'geografia', label: 'Geografia', description: 'Lugares, países e paisagens', available: true },
-  { id: 'filmes', label: 'Filmes e séries', description: 'Cinema e televisão', available: false },
-  { id: 'futebol', label: 'Futebol', description: 'Times e termos do esporte', available: false },
-  { id: 'musica', label: 'Música', description: 'Gêneros, artistas e instrumentos', available: false },
-  { id: 'videogames', label: 'Videogames', description: 'Jogos, personagens e consoles', available: false },
-] as const;
+export const CARD_SIZES = {
+  longo: [8, 7, 6, 5],
+  padrao: [8, 7, 5],
+  rapido: [8, 6, 5],
+  duelo: [6, 5],
+} as const;
+
+export function getCardSizes(mode: (typeof MODES)[number]['id']): number[] {
+  return [...CARD_SIZES[mode]];
+}
+
+export function getWordsRequired(mode: (typeof MODES)[number]['id']): number {
+  return getCardSizes(mode).reduce((total, size) => total + size, 0);
+}
 
 type Setup = {
   players: number;
   names: string[];
   mode: (typeof MODES)[number]['id'];
   seconds: (typeof TIMES)[number];
-  category: (typeof CATEGORIES)[number]['id'];
+  category: string;
+  wordSource: 'firestore' | 'ia' | 'firestore-fallback';
+  words: string[];
+  topic: string;
+  fallbackMessage: string;
 };
 
 const SetupContext = createContext<{
@@ -35,18 +44,30 @@ const SetupContext = createContext<{
 
 export function GameSetupProvider({ children }: { children: ReactNode }) {
   const [setup, setSetup] = useState<Setup>({
-    players: 2, names: Array<string>(8).fill(''), mode: 'padrao', seconds: 90, category: 'livre',
+    players: 2,
+    names: Array<string>(8).fill(''),
+    mode: 'padrao',
+    seconds: 90,
+    category: '',
+    wordSource: 'firestore',
+    words: [],
+    topic: '',
+    fallbackMessage: '',
   });
 
+  const update = useCallback((patch: Partial<Setup>) => {
+    setSetup((current) => ({ ...current, ...patch }));
+  }, []);
+  const setName = useCallback((index: number, name: string) => {
+    setSetup((current) => ({
+      ...current,
+      names: current.names.map((value, position) => position === index ? name : value),
+    }));
+  }, []);
+  const value = useMemo(() => ({ setup, update, setName }), [setup, update, setName]);
+
   return (
-    <SetupContext.Provider value={{
-      setup,
-      update: (patch) => setSetup((current) => ({ ...current, ...patch })),
-      setName: (index, name) => setSetup((current) => ({
-        ...current,
-        names: current.names.map((value, position) => position === index ? name : value),
-      })),
-    }}>
+    <SetupContext.Provider value={value}>
       {children}
     </SetupContext.Provider>
   );

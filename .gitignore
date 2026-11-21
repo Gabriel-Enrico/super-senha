@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+.wrangler/
 
 # Expo
 .expo/
@@ -30,8 +31,23 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# local env and provider secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+
+# Firebase Admin SDK credentials (never commit service account private keys)
+*service-account*.json
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+firebase-adminsdk*.json
+
+# Firebase local emulator/debug state
+.firebase/
+firebase-debug.log
+firestore-debug.log
 
 # typescript
 *.tsbuildinfo

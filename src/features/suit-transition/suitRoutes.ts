@@ -8,7 +8,8 @@ type RouteName = keyof RootStackParamList;
 
 export function routeSuit(route: RouteName): Suit {
   if (route === 'Regras') return '♦';
-  if (route === 'Configurações') return '♣';
+  if (route === 'Configurações' || route === 'Ajustes da partida') return '♣';
+  if (route === 'Meus temas') return '♥';
   return '♠';
 }
 
@@ -27,8 +28,27 @@ export function useSuitNavigation() {
     suit,
     backId: backAnchor(route, suit),
     actionId: `${route}:continue`,
-    go: (to: Exclude<RouteName, 'Menu'>, from: string) =>
-      run({ suit: routeSuit(to), from, to: backAnchor(to, routeSuit(to)), navigate: () => navigation.navigate(to) }),
+    go: <T extends Exclude<RouteName, 'Menu'>>(
+  to: T,
+  from: string,
+  params?: RootStackParamList[T]
+) =>
+  run({
+    suit: routeSuit(to),
+    from,
+    to: backAnchor(to, routeSuit(to)),
+    navigate: () => {
+      if (to === 'Partida') {
+        navigation.reset({ index: 0, routes: [{ name: 'Partida' }] });
+        return;
+      }
+
+      navigation.navigate({
+        name: to,
+        params,
+      } as never);
+    },
+  }),
     back: (source = backAnchor(route, suit)) => {
       const state = navigation.getState();
       const previous = state.routes[state.index - 1]?.name;
